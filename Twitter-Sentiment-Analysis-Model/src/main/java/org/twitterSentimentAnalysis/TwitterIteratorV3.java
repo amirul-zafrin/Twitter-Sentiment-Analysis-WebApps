@@ -40,7 +40,7 @@ public class TwitterIteratorV3 implements DataSetIterator {
      * @param train             If true: return the training data. If false: return the testing data.
      */
 
-    public TwitterIteratorV3(String dataDir, WordVectors wordVectors, int batchSize, int truncateLength, boolean train) throws IOException {
+    public TwitterIteratorV3(String dataDir, WordVectors wordVectors, int batchSize, boolean train) throws IOException {
         this.batchSize = batchSize;
         this.vectorSize = wordVectors.getWordVector(wordVectors.vocab().wordAtIndex(0)).length;
 

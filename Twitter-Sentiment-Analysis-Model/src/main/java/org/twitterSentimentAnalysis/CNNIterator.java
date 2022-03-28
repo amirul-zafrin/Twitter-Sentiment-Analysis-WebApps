@@ -1,16 +1,17 @@
-/**
- This datasetIterator is not fully build yet, still in progress as for 28/3/2022
- This iterator is for Model2.java
- */
-
-
-//package org.deeplearning4j.examples.sample;
+///**
+// This datasetIterator is not fully build yet, still in progress as for 28/3/2022
+// This iterator is for Model2.java
+// */
+//
+//
+//package org.twitterSentimentAnalysis;
 //
 //import org.deeplearning4j.iterator.CnnSentenceDataSetIterator;
 //import org.deeplearning4j.iterator.LabeledSentenceProvider;
 //import org.deeplearning4j.iterator.provider.FileLabeledSentenceProvider;
 //import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 //import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+//import org.twitterSentimentAnalysis.TextPreprocessor;
 //
 //import java.io.File;
 //import java.io.IOException;
@@ -36,18 +37,17 @@
 //        negativeFiles = TextPreprocessor.readTXT(new File(dataDirectory,"negative.txt"));
 //        neutralFiles = TextPreprocessor.readTXT(new File(dataDirectory,"neutral.txt"));
 //
-//        Map<String, List<String> reviewFilesMap = new HashMap<>();
+//        Map<String, List<String>> reviewFilesMap = new HashMap<>();
 //        reviewFilesMap.put("Positive", positiveFiles);
 //        reviewFilesMap.put("Negative", negativeFiles);
 //        reviewFilesMap.put("Neutral", neutralFiles);
 //
-//
 //        Random rng = new Random(12345);
 //        LabeledSentenceProvider sentenceProvider = new FileLabeledSentenceProvider(reviewFilesMap, rng);
-//        Labeled
 //
 //        return new CnnSentenceDataSetIterator.Builder(CnnSentenceDataSetIterator.Format.CNN2D)
-//                .sentenceProvider(sentenceProvider)
+////                .sentenceProvider(sentenceProvider)
+//                .sentenceProvider(reviewFilesMap,)
 //                .wordVectors(wordVectors)
 //                .minibatchSize(minibatchSize)
 //                .maxSentenceLength(maxSentenceLength)

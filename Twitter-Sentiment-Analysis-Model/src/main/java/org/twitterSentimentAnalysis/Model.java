@@ -42,8 +42,8 @@ public class Model {
 
         String dataDir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\twitterSA";
 
-        TwitterIteratorV3 trainData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,true);
-        TwitterIteratorV3 testData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,false);
+        TwitterIteratorV3 trainData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,true);
+        TwitterIteratorV3 testData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,false);
 
         //For managing GarbageCollector
         Nd4j.getMemoryManager().setAutoGcWindow(10000);
@@ -59,11 +59,6 @@ public class Model {
 
                 .layer(new LSTM.Builder()
                         .nIn(WORD_VEC_LENGTH)
-                        .nOut(TRUNCATE_LENGTH)
-                        .activation(Activation.TANH)
-                        .build())
-
-                .layer(new LSTM.Builder()
                         .nOut(TRUNCATE_LENGTH)
                         .activation(Activation.TANH)
                         .build())
