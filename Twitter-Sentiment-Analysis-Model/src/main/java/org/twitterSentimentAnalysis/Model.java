@@ -22,10 +22,7 @@ import java.io.IOException;
 
 public class Model {
     private static Logger log = LoggerFactory.getLogger(Model.class);
-    public static final String WORD_VECTOR_PATH = "C:\\Users\\zafri\\Downloads\\Compressed\\ms.vec";
-    public static final String WORD_VECTOR_BIN = "C:\\Users\\zafri\\Downloads\\Compressed\\ms.bin";
-//    static File savedPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\w2v.zip");
-//    static File savedPath = new File("C:\\Users\\zafri\\Downloads\\Compressed\\malay_word2vec\\mswiki.vector");
+
     private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\w2vInf_v5.zip");
     static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\LSTM_v2.zip");
 
@@ -48,6 +45,7 @@ public class Model {
         TwitterIteratorV3 trainData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,true);
         TwitterIteratorV3 testData= new TwitterIteratorV3(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,false);
 
+        //For managing GarbageCollector
         Nd4j.getMemoryManager().setAutoGcWindow(10000);
         Nd4j.getMemoryManager().togglePeriodicGc(false);
 
@@ -78,6 +76,7 @@ public class Model {
 
                 .build();
 
+        log.info("Training model...");
         MultiLayerNetwork model = new MultiLayerNetwork(config);
         model.init();
 
@@ -95,18 +94,11 @@ public class Model {
         //Evaluation
         log.info("Evaluating.....");
         Evaluation eval = model.evaluate(testData);
-        System.out.println(eval.confusionMatrix());
         System.out.println("Test evaluation: "+eval.stats());
-
 
         log.info("Saving model.....");
         ModelSerializer.writeModel(model,modelPath, true);
-
-//        System.out.println("Training evaluation...");
-//        System.out.println(evalTrain.stats());
-
-//        System.out.println("Testing Evaluation ------");
-//        System.out.println(eval.confusionMatrix());
+        log.info("Model saved at {}", modelPath);
 
     }
 

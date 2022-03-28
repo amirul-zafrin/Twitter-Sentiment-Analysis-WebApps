@@ -26,10 +26,12 @@ public class W2VInference {
         Word2Vec word2Vec = null;
 
         if(!savedPath.exists()){
+            log.info("{} is not exist! Building ....", savedPath);
             File dataPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\allDataLite.txt");
             log.info("Loading data from {}", dataPath);
 
             SentenceIterator dataIter = new BasicLineIterator(dataPath);
+            //Preprocess data using customize text preprocessor
             dataIter.setPreProcessor(new SentencePreProcessor() {
                 @Override
                 public String preProcess(String s) {
@@ -69,6 +71,7 @@ public class W2VInference {
             word2Vec = WordVectorSerializer.readWord2VecModel(savedPath); //Load retrained model
         }
 
+        //test the word2Vec
         String testWord = "banjir";
         String testWord2 = "saya";
 

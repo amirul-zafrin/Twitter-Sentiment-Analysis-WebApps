@@ -23,7 +23,6 @@ public class TwitterIteratorV3 implements DataSetIterator {
     private final WordVectors wordVectors;
     private final int batchSize;
     private final int vectorSize;
-    private final int truncateLength;
 
     private int positiveCursor = 0;
     private int negativeCursor = 0;
@@ -38,7 +37,6 @@ public class TwitterIteratorV3 implements DataSetIterator {
      * @param dataDir the directory of the Tweets data
      * @param wordVectors       WordVectors object
      * @param batchSize         Size of each minibatch for training
-     * @param truncateLength    Truncate the tweets if it exceed the length
      * @param train             If true: return the training data. If false: return the testing data.
      */
 
@@ -55,11 +53,7 @@ public class TwitterIteratorV3 implements DataSetIterator {
         negativeFiles = TextPreprocessor.readTXT(new File(dataDirectory,"negative.txt"));
         neutralFiles = TextPreprocessor.readTXT(new File(dataDirectory,"neutral.txt"));
 
-
-//        this.posNegRatio = positiveFiles.length / (double) negativeFiles.length;
-
         this.wordVectors = wordVectors;
-        this.truncateLength = truncateLength;
 
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
@@ -93,7 +87,6 @@ public class TwitterIteratorV3 implements DataSetIterator {
             }
         }
 
-        //negative index starts after positive index
         for (int i = splitBatchSize; i < splitBatchSize*2 && negativeCursor < negativeFiles.size(); ++i) {
             twitterArray.add(negativeFiles.get(negativeCursor));
             labelArr[i] = 2;
@@ -106,7 +99,6 @@ public class TwitterIteratorV3 implements DataSetIterator {
             ++neutralCursor;
         }
 
-        //Tokenize mails and filter out unknown words
         List<List<String>> allTokens = new ArrayList<>(twitterArray.size());
         int maxLength = 0;
         for (String s : twitterArray) {
@@ -119,15 +111,11 @@ public class TwitterIteratorV3 implements DataSetIterator {
             maxLength = Math.max(maxLength, tokensFiltered.size());
         }
 
-        //If longest mail exceeds 'truncateLength': only take the first 'truncateLength' words
-//        if (maxLength > truncateLength) maxLength = truncateLength;
-
         //Create data for training
-        //Here: we have twitterArray.size() examples of varying lengths
         INDArray features = Nd4j.create(twitterArray.size(), vectorSize, maxLength);
-        INDArray labels = Nd4j.create(twitterArray.size(), 3, maxLength);    //Three labels: positive(0) / neutral(1) / negative(2)
+        //Three labels: positive(0) / neutral(1) / negative(2)
+        INDArray labels = Nd4j.create(twitterArray.size(), 3, maxLength);
 
-        //Padding arrays because of mails of different lengths and only one output at the final time step
         //Mask arrays contain 1 if data is present at that time step for that example, or 0 if data is just padding
         INDArray featuresMask = Nd4j.zeros(twitterArray.size(), maxLength);
         INDArray labelsMask = Nd4j.zeros(twitterArray.size(), maxLength);
@@ -135,10 +123,8 @@ public class TwitterIteratorV3 implements DataSetIterator {
         for (int i = 0; i < twitterArray.size(); ++i) {
             List<String> tokens = allTokens.get(i);
 
-            // Get the truncated sequence length of document (i)
             int seqLength = Math.min(tokens.size(), maxLength);
 
-            //Get word vectors for each word in review, and put them in the training data
             for (int j = 0; j < tokens.size() && j < maxLength; ++j) {
                 String token = tokens.get(j);
                 INDArray vector = wordVectors.getWordVectorMatrix(token);

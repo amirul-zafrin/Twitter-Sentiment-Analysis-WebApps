@@ -2,6 +2,14 @@ package org.twitterSentimentAnalysis;
 
 import java.util.*;
 
+
+/**
+ * This is the list of stopwords from
+ * https://github.com/huseinzol05/malaya/blob/master/malaya/text/tatabahasa.py
+ * that I translate it into JAVA
+ */
+
+
 public class Tatabahasa<laughing> {
     final String alphabet = "qwertyuiopasdfghjklzxcvbnm";
     final String consonants = "bcdfghjklmnpqrstvwxyz";
