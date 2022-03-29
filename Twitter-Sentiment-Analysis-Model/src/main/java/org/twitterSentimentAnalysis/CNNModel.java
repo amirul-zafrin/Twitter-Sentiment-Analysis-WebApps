@@ -10,35 +10,30 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
-import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 
-
-/**
- This model is not fully build yet, still in progress as for 28/3/2022
- */
-
-public class Model2 {
-    private static Logger log = LoggerFactory.getLogger(Model.class);
+public class CNNModel {
+    private static Logger log = LoggerFactory.getLogger(CNNModel.class);
     private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\w2vInf_v5.zip");
-    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\CNN_v1.zip");
-
+    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\CNN_v5.zip");
 
     public static final int WORD_VEC_LENGTH = 300;
     public static final int SEED = 123;
-    public static final int TRUNCATE_LENGTH = 100;
+    public static final int TRUNCATE_LENGTH = 400; //original = 100
     public static final int CLASSES = 3;
     public static final int EPOCHS = 10;
-    public static final int BATCH_SIZE = 900;
-    public static final int CNN_LAYER_FEATURE_MAPS = 100;
+    public static final int BATCH_SIZE = 32;
+    public static final int CNN_LAYER_FEATURE_MAPS = 400;
     public static PoolingType GLOBAL_POOLING = PoolingType.MAX;
 
 
@@ -50,8 +45,8 @@ public class Model2 {
 
         String dataDir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\twitterSA";
 
-        TwitterIteratorV2 trainData= new TwitterIteratorV2(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,true);
-        TwitterIteratorV2 testData= new TwitterIteratorV2(dataDir,wordVectors, BATCH_SIZE,TRUNCATE_LENGTH,false);
+        DataSetIterator trainData = new CNNIterator(true, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
+        DataSetIterator testData = new CNNIterator(false, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
 
         Nd4j.getMemoryManager().setAutoGcWindow(10000);
         Nd4j.getMemoryManager().togglePeriodicGc(false);
@@ -71,25 +66,71 @@ public class Model2 {
                         .stride(1,WORD_VEC_LENGTH)
                         .nOut(CNN_LAYER_FEATURE_MAPS)
                         .build(),"input")
+
                 .addLayer("cnn4", new ConvolutionLayer.Builder()
                         .kernelSize(4, WORD_VEC_LENGTH)
                         .stride(1, WORD_VEC_LENGTH)
                         .nOut(CNN_LAYER_FEATURE_MAPS)
                         .build(), "input")
+
                 .addLayer("cnn5", new ConvolutionLayer.Builder()
                         .kernelSize(5, WORD_VEC_LENGTH)
                         .stride(1, WORD_VEC_LENGTH)
                         .nOut(CNN_LAYER_FEATURE_MAPS)
                         .build(),"input")
+
                 .addVertex("merge", new MergeVertex(), "cnn3","cnn4","cnn5")
+
+                .addLayer("cnn6", new ConvolutionLayer.Builder()
+                        .kernelSize(3, 3)
+                        .stride(1,1)
+                        .nOut(CNN_LAYER_FEATURE_MAPS)
+                        .build(),"merge")
+
+                .addLayer("cnn7", new ConvolutionLayer.Builder()
+                        .kernelSize(4, 4)
+                        .stride(1, 1)
+                        .nOut(CNN_LAYER_FEATURE_MAPS)
+                        .build(), "merge")
+
+                .addLayer("cnn8", new ConvolutionLayer.Builder()
+                        .kernelSize(5,5)
+                        .stride(1,1)
+                        .nOut(CNN_LAYER_FEATURE_MAPS)
+                        .build(),"merge")
+
+                .addVertex("merge2", new MergeVertex(), "cnn6","cnn7","cnn8")
+
+//                //Additional Layer for bottleneck [Experiment]
+                .addLayer("cnn1", new ConvolutionLayer.Builder()
+                        .kernelSize(1,1)
+                        .stride(1,1)
+                        .nOut(CNN_LAYER_FEATURE_MAPS)
+                        .build(), "merge2")
+
                 .addLayer("globalPool", new GlobalPoolingLayer.Builder()
                         .poolingType(GLOBAL_POOLING)
                         .dropOut(0.5)
-                        .build(), "merge")
+                        .build(), "cnn1")
+
+                //Additional dense layer [Experiment]
+                .addLayer("dense1", new DenseLayer.Builder()
+                        .nOut(100)
+                        .activation(Activation.TANH)
+                        .dropOut(0.5)
+                        .build(), "globalPool")
+
+//                Additional dense layer [Experiment]
+                .addLayer("dense2",new DenseLayer.Builder()
+                        .nOut(30)
+                        .activation(Activation.TANH)
+                        .build(),"dense1")
+
                 .addLayer("out", new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MCXENT)
-                        .nOut(3)
-                        .build(), "globalPool")
+                        .nOut(CLASSES)
+                        .build(), "dense2")
+
                 .setOutputs("out")
                 .setInputTypes(InputType.convolutional(TRUNCATE_LENGTH, WORD_VEC_LENGTH,1))
                 .build();
@@ -105,6 +146,8 @@ public class Model2 {
 
         model.setListeners(new ScoreIterationListener(10));
 
+//        System.out.println(config.toString());
+
         log.info("Training model.....");
         model.fit(trainData, EPOCHS);
 
@@ -112,19 +155,13 @@ public class Model2 {
         log.info("Evaluating.....");
         Evaluation evalTrain = model.evaluate(trainData);
         System.out.println("Training evaluation: " + evalTrain.stats());
-
+//
         Evaluation eval = model.evaluate(testData);
-//        System.out.println(eval.confusionMatrix());
         System.out.println("Test evaluation: "+eval.stats());
-
-
-        log.info("Saving model.....");
-        ModelSerializer.writeModel(model,modelPath, true);
-
-
-
-//        System.out.println("Testing Evaluation ------");
-//        System.out.println(eval.confusionMatrix());
+//
+//        log.info("Saving model.....");
+//        ModelSerializer.writeModel(model,modelPath, true);
+//
 
     }
 

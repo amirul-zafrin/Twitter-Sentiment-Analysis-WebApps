@@ -25,6 +25,13 @@ information regarding copyright ownership.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
     <!-- Group-ID, artifact ID and version of the project. You can modify these as you want -->
     <groupId>org.twitterSentimentAnalysis</groupId>
     <artifactId>deeplearning4j-twitter-sentiment</artifactId>
@@ -38,6 +45,7 @@ information regarding copyright ownership.
 <!--        <nd4j.backend>nd4j-native-platform</nd4j.backend>-->
         <nd4j.backend>nd4j-cuda-11.2-platform</nd4j.backend>
         <nd4j.version>1.0.0-beta4</nd4j.version>
+        <springbootversion>2.6.5</springbootversion>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -92,6 +100,41 @@ information regarding copyright ownership.
             <version>1.18.18</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.13.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -105,7 +148,6 @@ information regarding copyright ownership.
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
-
 
             <!--
             Maven shade plugin configuration: this is required so that if you build a single JAR file (an "uber-jar")

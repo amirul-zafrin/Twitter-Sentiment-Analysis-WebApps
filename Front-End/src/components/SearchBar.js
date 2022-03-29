@@ -29,7 +29,6 @@ function Searchbar(props) {
       placeholder="Enter keyword"
       margin="dense"
       style = {{width: 450}}
-      autoComplete = {false}
       />
       </div>
     </div>

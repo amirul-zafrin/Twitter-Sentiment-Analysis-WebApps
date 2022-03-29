@@ -1,6 +1,5 @@
 package org.fetchTweet;
 import twitter4j.*;
-import twitter4j.api.TrendsResources;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -14,11 +13,7 @@ public class Twitterer {
     private PrintStream consolePrint;
     private List<Status> statuses;
     private ArrayList<Long> twtId;
-    public static String lastWeek= LocalDateTime.now().minusDays(7).toLocalDate().toString();
-    public final static String OAUTH_CONSUMER_KEY = "MXB7XLAiELetNib7WTyYW3jKN";
-    public final static String OAUTH_CONSUMER_SECRET = "rjXZc9T6PVRH6yPPdlNgFKY4ZSY3HBHJAHSR9sWQQpS8RW2H3B";
-    public final static String OAUTH_ACCESS_TOKEN = "1503220384656945155-vvYTTRdCRlmPDtJBCZDO9Twr9EkHNF";
-    public final static String OAUTH_ACCESS_TOKEN_SECRET = "0O3HelZOhCuiS1r1wD7wUB8rTd7pcbzRIMf8nEwvH6HHQ";
+    public static String lastMonth = LocalDateTime.now().minusMonths(1).toLocalDate().toString();
     private int radiusKM = 10;
     private int woeid = 23424901;
 
@@ -33,26 +28,60 @@ public class Twitterer {
 
     public void queryHandle(String handle) throws TwitterException, IOException {
         statuses.clear();
-//        fetchTwt(handle);
+        twtId.clear();
         getTwtId(handle);
         System.out.println(twtId);
     }
 
-    private void fetchTweets(String handle) throws TwitterException, IOException {
-        //get certain amount of tweets per page
-        Paging page = new Paging(1,20);
-        int p = 1;
-        while(p <= 2){
-            page.setPage(p);
-            statuses.addAll(twitter.getUserTimeline(handle,page));
-            p++;
+    public ArrayList<Long> getTwtId(String handle) {
+
+        statuses.clear();
+        twtId.clear();
+        Query query = new Query(handle + " -filter:retweet -filter:media");
+        query.setCount(10);
+        query.setSince(lastMonth);
+
+        try {
+            QueryResult result = twitter.search(query);
+            System.out.println("Count: "+result.getTweets().size());
+            statuses.addAll(result.getTweets());
+
+            for(Status tweet: result.getTweets()) {
+                twtId.add(tweet.getId());
+            }
+        }catch (TwitterException e) {
+            e.printStackTrace();
         }
+        return twtId;
+    }
+
+    public ArrayList<Long> getTwtIdFromUser(String handle) {
+        statuses.clear();
+        twtId.clear();
+
+        Query query = new Query("from:"+ handle + " -filter:retweet -filter:media");
+        query.setCount(10);
+        query.setSince(lastMonth);
+
+        try {
+            QueryResult result = twitter.search(query);
+            System.out.println("Count: "+result.getTweets().size());
+            statuses.addAll(result.getTweets());
+
+            for(Status tweet: result.getTweets()) {
+                twtId.add(tweet.getId());
+            }
+
+        }catch (TwitterException e) {
+            e.printStackTrace();
+        }
+        return twtId;
     }
 
     private void fetchTwt(String handle) {
-        Query query = new Query("from:"+ handle + " -filter:retweet");
+        Query query = new Query("from:"+ handle + " -filter:retweet -filter:media");
         query.setCount(10);
-        query.setSince(lastWeek);
+        query.setSince(lastMonth);
 
         try {
             QueryResult result = twitter.search(query);
@@ -63,7 +92,6 @@ public class Twitterer {
                 counter++;
                 System.out.println(String.format("Tweet #%d: @%s  tweeted \"%s\"", counter, tweet.getUser().getName(),
                         tweet.getText()));
-//                tweet.getId()
             }
 
         }catch (TwitterException e) {
@@ -71,27 +99,6 @@ public class Twitterer {
         }
         System.out.println();
 
-    }
-
-    private void getTwtId(String handle) {
-        Query query = new Query("from:"+ handle + " -filter:retweet");
-        query.setCount(10);
-        query.setSince(lastWeek);
-
-        try {
-            QueryResult result = twitter.search(query);
-            int counter = 0;
-            System.out.println("Count: "+result.getTweets().size());
-            statuses.addAll(result.getTweets());
-
-            for(Status tweet: result.getTweets()) {
-                counter++;
-                twtId.add(tweet.getId());
-            }
-
-        }catch (TwitterException e) {
-            e.printStackTrace();
-        }
     }
 
 //    Malaysia (woeid:23424901)
@@ -150,7 +157,7 @@ public class Twitterer {
     }
 
     public void seachByWords(String terms) {
-        Query query = new Query("from:"+ terms + " -is:retweet");
+        Query query = new Query(terms + " -is:retweet");
 
         try {
             QueryResult result = twitter.search(query);

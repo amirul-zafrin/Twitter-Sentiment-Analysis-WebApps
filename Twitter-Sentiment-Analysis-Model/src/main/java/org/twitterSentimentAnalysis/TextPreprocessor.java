@@ -1,5 +1,7 @@
 package org.twitterSentimentAnalysis;
 
+import org.nd4j.common.io.ClassPathResource;
+
 import java.io.*;
 import java.util.*;
 
