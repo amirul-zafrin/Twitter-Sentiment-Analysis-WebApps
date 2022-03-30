@@ -25,15 +25,15 @@ import java.io.IOException;
 public class CNNModel {
     private static Logger log = LoggerFactory.getLogger(CNNModel.class);
     private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\w2vInf_v5.zip");
-    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\CNN_v5.zip");
+    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\CNN_v7.zip");
 
     public static final int WORD_VEC_LENGTH = 300;
     public static final int SEED = 123;
-    public static final int TRUNCATE_LENGTH = 400; //original = 100
+    public static final int TRUNCATE_LENGTH = 200; //original = 100
     public static final int CLASSES = 3;
     public static final int EPOCHS = 10;
-    public static final int BATCH_SIZE = 32;
-    public static final int CNN_LAYER_FEATURE_MAPS = 400;
+    public static final int BATCH_SIZE = 64;
+    public static final int CNN_LAYER_FEATURE_MAPS = 200;
     public static PoolingType GLOBAL_POOLING = PoolingType.MAX;
 
 
@@ -45,8 +45,8 @@ public class CNNModel {
 
         String dataDir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\twitterSA";
 
-        DataSetIterator trainData = new CNNIterator(true, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
-        DataSetIterator testData = new CNNIterator(false, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
+        DataSetIterator trainData = new CNNIterator(dataDir,true, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
+        DataSetIterator testData = new CNNIterator(dataDir, false, wordVectors, BATCH_SIZE, TRUNCATE_LENGTH).getIter();
 
         Nd4j.getMemoryManager().setAutoGcWindow(10000);
         Nd4j.getMemoryManager().togglePeriodicGc(false);
@@ -81,32 +81,12 @@ public class CNNModel {
 
                 .addVertex("merge", new MergeVertex(), "cnn3","cnn4","cnn5")
 
-                .addLayer("cnn6", new ConvolutionLayer.Builder()
-                        .kernelSize(3, 3)
-                        .stride(1,1)
-                        .nOut(CNN_LAYER_FEATURE_MAPS)
-                        .build(),"merge")
-
-                .addLayer("cnn7", new ConvolutionLayer.Builder()
-                        .kernelSize(4, 4)
-                        .stride(1, 1)
-                        .nOut(CNN_LAYER_FEATURE_MAPS)
-                        .build(), "merge")
-
-                .addLayer("cnn8", new ConvolutionLayer.Builder()
-                        .kernelSize(5,5)
-                        .stride(1,1)
-                        .nOut(CNN_LAYER_FEATURE_MAPS)
-                        .build(),"merge")
-
-                .addVertex("merge2", new MergeVertex(), "cnn6","cnn7","cnn8")
-
 //                //Additional Layer for bottleneck [Experiment]
                 .addLayer("cnn1", new ConvolutionLayer.Builder()
                         .kernelSize(1,1)
                         .stride(1,1)
                         .nOut(CNN_LAYER_FEATURE_MAPS)
-                        .build(), "merge2")
+                        .build(), "merge")
 
                 .addLayer("globalPool", new GlobalPoolingLayer.Builder()
                         .poolingType(GLOBAL_POOLING)
@@ -115,16 +95,23 @@ public class CNNModel {
 
                 //Additional dense layer [Experiment]
                 .addLayer("dense1", new DenseLayer.Builder()
-                        .nOut(100)
+                        .nOut(200)
                         .activation(Activation.TANH)
                         .dropOut(0.5)
                         .build(), "globalPool")
 
 //                Additional dense layer [Experiment]
                 .addLayer("dense2",new DenseLayer.Builder()
-                        .nOut(30)
+                        .nOut(100)
                         .activation(Activation.TANH)
+                        .dropOut(0.5)
                         .build(),"dense1")
+
+//                .addLayer("dense3",new DenseLayer.Builder()
+//                        .nOut(50)
+//                        .activation(Activation.TANH)
+//                        .dropOut(0.5)
+//                        .build(),"dense2")
 
                 .addLayer("out", new OutputLayer.Builder()
                         .lossFunction(LossFunctions.LossFunction.MCXENT)
@@ -154,13 +141,17 @@ public class CNNModel {
         //Evaluation
         log.info("Evaluating.....");
         Evaluation evalTrain = model.evaluate(trainData);
+        log.info("Training evaluation: {}", evalTrain.stats());
         System.out.println("Training evaluation: " + evalTrain.stats());
 //
         Evaluation eval = model.evaluate(testData);
+        log.info("Test evaluation: {}", eval.stats());
         System.out.println("Test evaluation: "+eval.stats());
 //
-//        log.info("Saving model.....");
-//        ModelSerializer.writeModel(model,modelPath, true);
+        log.info("Saving model at {}",modelPath);
+        ModelSerializer.writeModel(model,modelPath, true);
+        log.info("Model saved at {}", modelPath);
+        System.out.println("Done");
 //
 
     }

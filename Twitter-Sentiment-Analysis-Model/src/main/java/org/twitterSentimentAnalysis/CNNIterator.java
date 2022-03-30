@@ -3,7 +3,6 @@
  This iterator is for Model2.java
  */
 
-
 package org.twitterSentimentAnalysis;
 
 import org.deeplearning4j.iterator.CnnSentenceDataSetIterator;
@@ -23,12 +22,9 @@ public class CNNIterator {
     private int minibatchSize;
     private int maxSentenceLength;
 
-    public CNNIterator(Boolean train, WordVectors wordVectors, int minibatchSize, int maxSentenceLength) throws IOException {
+    public CNNIterator(String dataDir, Boolean train, WordVectors wordVectors, int minibatchSize, int maxSentenceLength) throws IOException {
 
-        String dataDir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\twitterSA";
-        String subDir = (train) ? "train" : "test";
-        String dir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\" + subDir;
-
+//        String dataDir = "C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\twitterSA";
         String subDirectory = (train) ? "/train/" : "/test/";
 
         String dataDirectory = dataDir + subDirectory;

@@ -19,6 +19,7 @@ public class TextPreprocessor {
         s = removeURL(s);
         s = removeNumber(s);
         s = removeTag(s);
+        s = removeHash(s);
         s = removeSpecialCharac(s);
         s = normalizeSounds(s, Tatabahasa.getNormalizeWord());
         s = normalizeDateReplace(s, Tatabahasa.getNormalizedDateString());
@@ -105,7 +106,12 @@ public class TextPreprocessor {
 
     public static String removeTag(String s) {
         String tagPattern = "(?:\\s|\\A)[@]+([A-Za-z0-9-_]+)";
-        return s.replaceAll(tagPattern,"@user").trim();
+        return s.replaceAll(tagPattern,"").trim();
+    }
+
+    public static String removeHash(String s) {
+        String hashPattern = "(?:\\s|\\A)[#]+([A-Za-z0-9-_]+)";
+        return s.replaceAll(hashPattern,"").trim();
     }
 
     public static String removeSpecialCharac(String s) {

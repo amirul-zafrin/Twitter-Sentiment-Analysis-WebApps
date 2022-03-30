@@ -4,29 +4,23 @@ import org.backEnd.twitterSA.model.Twitter;
 import org.fetchTweet.tweetFetch;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class ModelController {
 
     @GetMapping("/defaultTweet")
     public ArrayList<Twitter> getTwt() {
-//        ArrayList<Long> defTweetId = tweetFetch.getDefTweetId();
-//        ArrayList<Twitter> twt = new ArrayList<>();
-//        twt.clear();
-//        int idx = 0;
-//        for(Long t: defTweetId) {
-//            ++idx;
-//            twt.add(new Twitter(idx, t));
-//        }
-//        return twt;
-        return tweetFetch.getTwtId();
+        return tweetFetch.getDefTwtId();
     }
 
-//    @GetMapping("/queryResult")
-//    public ArrayList<Twitter> queryParam(@RequestParam(name = "keyword") String handle) {
-//
-//    }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/queryResult")
+    public ArrayList<Twitter> queryParam(@NotBlank @NotNull @RequestParam(name = "keyword") String handle) {
+        return tweetFetch.getTweetId(handle);
+    }
 
 }

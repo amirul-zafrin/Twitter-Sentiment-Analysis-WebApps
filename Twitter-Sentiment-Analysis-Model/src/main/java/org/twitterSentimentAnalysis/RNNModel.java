@@ -27,7 +27,7 @@ public class RNNModel {
     private static Logger log = LoggerFactory.getLogger(RNNModel.class);
 
     private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\w2vInf_v5.zip");
-    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\LSTM_v5.zip");
+    static File modelPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\model\\LSTM_v6.zip");
 
     public static final int WORD_VEC_LENGTH = 300;
     public static final int SEED = 123;
@@ -59,6 +59,18 @@ public class RNNModel {
                 .weightInit(WeightInit.XAVIER)
                 .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue).gradientNormalizationThreshold(1.0)
                 .list()
+
+                .layer(new LSTM.Builder()
+                        .nIn(WORD_VEC_LENGTH)
+                        .nOut(300)
+                        .activation(Activation.TANH)
+                        .build())
+
+                .layer(new LSTM.Builder()
+                        .nIn(WORD_VEC_LENGTH)
+                        .nOut(200)
+                        .activation(Activation.TANH)
+                        .build())
 
                 .layer(new LSTM.Builder()
                         .nIn(WORD_VEC_LENGTH)
