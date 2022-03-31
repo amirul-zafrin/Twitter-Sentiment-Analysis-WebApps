@@ -1,4 +1,4 @@
-package org.twitterSentimentAnalysis;
+package org.twitterSentimentAnalysis.LSTM;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
@@ -11,6 +11,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.twitterSentimentAnalysis.W2V.TextPreprocessor;
 
 import java.io.File;
 import java.io.IOException;

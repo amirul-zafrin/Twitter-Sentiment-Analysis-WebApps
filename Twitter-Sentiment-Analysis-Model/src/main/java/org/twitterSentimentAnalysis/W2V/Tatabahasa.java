@@ -1,4 +1,4 @@
-package org.twitterSentimentAnalysis;
+package org.twitterSentimentAnalysis.W2V;
 
 import java.util.*;
 

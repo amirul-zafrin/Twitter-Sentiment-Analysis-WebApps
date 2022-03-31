@@ -1,7 +1,6 @@
-package org.twitterSentimentAnalysis;
+package org.twitterSentimentAnalysis.W2V;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.sentenceiterator.BasicLineIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
@@ -17,21 +16,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-public class MyW2V {
-    private static Logger log = LoggerFactory.getLogger(MyW2V.class);
-//    private static File savedPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\w2v.zip");
-    private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\malay_word2vec\\mswiki.vector");
+public class W2VInference {
+    private static Logger log = LoggerFactory.getLogger(W2VInference.class);
+    private static File savedPath =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\w2vInf_v5.zip");
+    private static File trainedW2V =  new File("C:\\Users\\zafri\\Downloads\\Compressed\\malay_word2vec\\mswiki.vector");
 
     public static void main(String[] args) throws Exception {
 
         Word2Vec word2Vec = null;
-        WordVectors wordVectors = null;
 
         if(!savedPath.exists()){
+            log.info("{} is not exist! Building ....", savedPath);
             File dataPath = new File("C:\\Users\\zafri\\OneDrive\\Desktop\\NLP-Project\\dataset\\allDataLite.txt");
-            log.info("Load & Vectorize Sentences...");
+            log.info("Loading data from {}", dataPath);
 
             SentenceIterator dataIter = new BasicLineIterator(dataPath);
+            //Preprocess data using customize text preprocessor
             dataIter.setPreProcessor(new SentencePreProcessor() {
                 @Override
                 public String preProcess(String s) {
@@ -45,51 +45,33 @@ public class MyW2V {
             });
 
             //Get words
+            log.info("Vectorize sentences");
             TokenizerFactory tokenizer = new DefaultTokenizerFactory();
 
             tokenizer.setTokenPreProcessor(new CommonPreprocessor());
 
-            log.info("Building model...");
-            int layerSize = 80; //Word dimensionality: typically 50-100
-            int minWordFrequency = 100;
-            int seed = 123;
-            int windowSize = 5;
-            int batchSize = 1024;
-            int EPOCHS = 1;
-            int limit = 500000;
+            //Load and config
+            word2Vec = WordVectorSerializer.readWord2VecModel(trainedW2V);
+            word2Vec.setTokenizerFactory(tokenizer);
+            word2Vec.setSentenceIterator(dataIter);
+            word2Vec.getConfiguration().setNegative(5);
+            word2Vec.getConfiguration().setSampling(5);
 
-            word2Vec = new Word2Vec.Builder()
-                    .limitVocabularySize(limit)
-                    .allowParallelTokenization(true)
-                    .epochs(EPOCHS)
-                    .iterate(dataIter)
-                    .layerSize(layerSize)
-                    .minWordFrequency(minWordFrequency)
-                    .seed(seed)
-                    .windowSize(windowSize)
-                    .tokenizerFactory(tokenizer)
-                    .batchSize(batchSize)
-                    .build();
-
-            log.info("Fitting Word2Vec model");
+            log.info("Uptraining {}", trainedW2V);
             word2Vec.fit();
 
             log.info("Save Word2Vec Model to {}", savedPath);
             WordVectorSerializer.writeWord2VecModel(word2Vec, savedPath);
 
             log.info("Model saved at {}", savedPath);
+
         }
         else {
             log.info("Word2Vec already exist! Loading trained Word2Vec");
-            word2Vec = WordVectorSerializer.readWord2VecModel(savedPath); //First choice [200 MB](Projected)
-
-//            word2Vec = WordVectorSerializer.readWord2VecModel("C:\\Users\\zafri\\Downloads\\Compressed\\ms.vector");
-//            word2Vec = WordVectorSerializer.loadFullModel("C:\\Users\\zafri\\Downloads\\Compressed\\ms.vector"); //larger model [1.35 GB] (Projected)
-
-//            wordVectors = WordVectorSerializer.loadStaticModel(new File("C:\\Users\\zafri\\Downloads\\Compressed\\cc-ms-300.bin.gz"));
-
+            word2Vec = WordVectorSerializer.readWord2VecModel(savedPath); //Load retrained model
         }
 
+        //test the word2Vec
         String testWord = "banjir";
         String testWord2 = "saya";
 
@@ -98,12 +80,6 @@ public class MyW2V {
         log.info("Word vector length: " + vector.columns() +"\n");
         sanityCheck(word2Vec, testWord);
         sanityCheck(word2Vec, testWord2);
-
-        INDArray vector2 = wordVectors.getWordVectorMatrix(testWord);
-        log.info("\n");
-        log.info("Word vector length: " + vector2.columns() +"\n");
-        sanityCheck(wordVectors, testWord);
-        sanityCheck(wordVectors, testWord2);
 
     }
 
@@ -118,20 +94,5 @@ public class MyW2V {
         log.info("10 Words closest to {}: {}\n", word,list);
 
     }
-
-    public static void sanityCheck(WordVectors model, String word) throws Exception {
-        int numWordsNearest = 10;
-
-        if(!model.hasWord(word)) throw new Exception(("Word trained with not found!"));
-
-        Collection<String> list = model.wordsNearest(word, numWordsNearest + 1);
-
-        //remove itself from list
-        list.remove(word);
-
-        log.info("10 Words closest to {}: {}\n", word,list);
-
-    }
-
 
 }

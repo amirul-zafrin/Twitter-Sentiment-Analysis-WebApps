@@ -1,4 +1,4 @@
-package org.twitterSentimentAnalysis;
+package org.twitterSentimentAnalysis.CNN;
 
 import org.deeplearning4j.iterator.LabeledSentenceProvider;
 import org.nd4j.common.collection.CompactHeapStringList;

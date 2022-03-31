@@ -3,11 +3,12 @@
  This iterator is for Model2.java
  */
 
-package org.twitterSentimentAnalysis;
+package org.twitterSentimentAnalysis.CNN;
 
 import org.deeplearning4j.iterator.CnnSentenceDataSetIterator;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.twitterSentimentAnalysis.W2V.TextPreprocessor;
 
 import java.io.File;
 import java.io.IOException;

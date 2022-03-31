@@ -4,8 +4,10 @@ import twitter4j.*;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Twitterer {
@@ -18,14 +20,46 @@ public class Twitterer {
     private int woeid = 23424901;
 
     public Twitterer(PrintStream console) {
-        // Makes an instance of Twitter - this is re-useable and thread safe.
-        // Connects to Twitter and performs authorizations.
         twitter = TwitterFactory.getSingleton();
         consolePrint = console;
         statuses = new ArrayList<Status>();
         twtId = new ArrayList<Long>();
     }
 
+    /**
+     * Main Function
+     * */
+    public ArrayList<List> getTextForm(String handle) {
+        statuses.clear();
+        twtId.clear();
+        ArrayList<List> tweets = new ArrayList<>();
+        Query query = new Query(handle + " -filter:retweet -filter:media -from:" + handle +" -to:" + handle);
+        query.setCount(8);
+        query.setSince(lastMonth);
+
+        try {
+            QueryResult result = twitter.search(query);
+            System.out.println("Count: "+result.getTweets().size());
+            statuses.addAll(result.getTweets());
+
+            for(Status tweet: result.getTweets()) {
+                List<String> ind = new ArrayList<>();
+                ind.add(tweet.getText().replaceAll("\n"," "));
+                ind.add(tweet.getUser().getName());
+                ind.add(tweet.getUser().getScreenName());
+                ind.add(tweet.getUser().get400x400ProfileImageURL());
+                ind.add(String.valueOf(tweet.getId()));
+                tweets.add(ind);
+            }
+        }catch (TwitterException e) {
+            e.printStackTrace();
+        }
+        return tweets;
+    }
+
+    /**
+     * ALl the function below is for experimental; could be included in the future.
+     * */
     public void queryHandle(String handle) throws TwitterException, IOException {
         statuses.clear();
         twtId.clear();
@@ -33,12 +67,13 @@ public class Twitterer {
         System.out.println(twtId);
     }
 
+
     public ArrayList<Long> getTwtId(String handle) {
 
         statuses.clear();
         twtId.clear();
         Query query = new Query(handle + " -filter:retweet -filter:media");
-        query.setCount(10);
+        query.setCount(8);
         query.setSince(lastMonth);
 
         try {
@@ -80,7 +115,7 @@ public class Twitterer {
 
     private void fetchTwt(String handle) {
         Query query = new Query("from:"+ handle + " -filter:retweet -filter:media");
-        query.setCount(10);
+        query.setCount(8);
         query.setSince(lastMonth);
 
         try {
