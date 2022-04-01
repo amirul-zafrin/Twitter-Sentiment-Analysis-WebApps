@@ -1,11 +1,21 @@
-import * as React from 'react';
-import HomeBar from '../components/HomeBar';
-import { Box } from '@mui/system';
+import React, { useState } from "react";
+import HeroSection from "../components/Hero";
+import Navbar from "../components/NavBar";
 
 const Home = () => {
-  return (
-    <HomeBar />
-  )
-}
+  const [isOpen, setIsOpen] = useState(false);
 
-export default Home
+  const toggle = () => {
+    setIsOpen(!isOpen);
+    console.log(isOpen);
+  };
+
+  return (
+    <>
+      <Navbar toggle={toggle} />
+      <HeroSection />
+    </>
+  );
+};
+
+export default Home;
